@@ -5,6 +5,7 @@
 # Licence: GNU/GPL
 ############################################################################
 import pyglet
+from pyglet.window.key import MOD_CTRL, DOWN, UP, LEFT, RIGHT
 import random
 from math import sin, cos, radians, pi
 
@@ -33,6 +34,12 @@ class SpaceObject(object):
         # musím správně nastavit polohu sprite
         self.x = self._x
         self.y = self._y
+        
+        self.direction = direction \
+            if direction is not None else random.randint(0, 359)
+        # rychlost pohybu
+        self.speed = speed \
+            if speed is not None else random.randint(130, 180)
 
     @property
     def x(self):
@@ -51,6 +58,15 @@ class SpaceObject(object):
         self._y = self.sprite.y = new
 
     def tick(self, dt):
+        self.x += dt * self.speed * cos(pi / 2 - radians(self.direction))
+        self.sprite.x = self.x
+        self.y += dt * self.speed * sin(pi / 2 - radians(self.direction))
+        self.sprite.y = self.y
+        
+        
+        
+    """
+    def tick(self, dt):
         self.bounce()
 
         # do promenne dt se uloží doba od posledního tiknutí
@@ -59,15 +75,31 @@ class SpaceObject(object):
         self.y += dt * self.speed * sin(pi / 2 - radians(self.direction))
         self.sprite.y = self.y
         self.sprite.rotation += 0.01 * self.rspeed
+    """
 
-
-a = SpaceObject('SpaceShooterRedux/PNG/playerShip1_red.png')
-
+a = SpaceObject('SpaceShooterRedux/PNG/playerShip1_red.png', x=500,y=400)
+pyglet.clock.schedule_interval(a.tick, 1 / 30)
 
 @window.event
 def on_draw():
     window.clear()
     batch.draw()
+
+@window.event
+def on_key_press(sym, mod):
+    if sym == UP:
+        a.direction = 0
+        a.rotation = 0
+    elif sym == DOWN:
+        a.direction = 180
+        a.rotation = 180
+    elif sym == LEFT:
+        a.direction = 270
+        a.rotation = 270
+    elif sym == RIGHT:
+        a.direction = 90
+        a.rotation = 90
+    
 
 
 pyglet.app.run()
