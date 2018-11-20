@@ -8,17 +8,15 @@ import pyglet
 from pyglet.window.key import MOD_CTRL, DOWN, UP, LEFT, RIGHT
 import random
 from math import sin, cos, radians, pi
+import glob
 
 window = pyglet.window.Window(1000, 800)
 batch = pyglet.graphics.Batch()   # pro optimalizované vyreslování objektů
 
 
 class SpaceObject(object):
-
     def __init__(self, img_file,
-                 x=None, y=None,
-                 direction=None,
-                 speed=None, rspeed=None):
+                 x=None, y=None, direction=None, speed=None):
 
         # nečtu obrázek
         self.image = pyglet.image.load(img_file)
@@ -40,6 +38,8 @@ class SpaceObject(object):
         # rychlost pohybu
         self.speed = speed \
             if speed is not None else random.randint(130, 180)
+                
+        self.klavesy = set()
 
     @property
     def x(self):
@@ -62,8 +62,9 @@ class SpaceObject(object):
         self.sprite.x = self.x
         self.y += dt * self.speed * sin(pi / 2 - radians(self.direction))
         self.sprite.y = self.y
+
         
-        
+        print(a.klavesy)
         
     """
     def tick(self, dt):
@@ -77,7 +78,42 @@ class SpaceObject(object):
         self.sprite.rotation += 0.01 * self.rspeed
     """
 
-a = SpaceObject('SpaceShooterRedux/PNG/playerShip1_red.png', x=500,y=400)
+class Meteor(SpaceObject):
+    def __init__(self, x=None, y=None, direction=None,
+                 speed=None, rspeed=None):
+        y = window.height + 50
+        file_list = glob.glob('img/meteor*.png')
+        img_file = random.choice(file_list)
+        super().__init__(img_file, x, y)
+        self.speed = speed if speed is not None else random.randint(50, 200)
+        self.rspeed = rspeed if rspeed is not None else random.randint(- 40, 40)
+        self.direction = direction if direction is not None else random.randint(120, 240)
+        
+class Meet():
+    meteors = []
+    
+    def __init__(self, count):
+        for _ in range(count):
+            self.add_meteor()
+    
+    def add_meteor(self, dt=None):
+        self.meteors.append(Meteor())
+
+    def tick(self, dt):
+        for meteor in self.meteors:
+            meteor.tick(dt)
+            if meteor.x < -50 or meteor.y < -50 or meteor.x > window.width+50:
+                meteor.sprite.delete()
+                self.meteors.remove(meteor)
+
+
+a = SpaceObject('SpaceShooterRedux/PNG/playerShip1_red.png', x=500,y=100,speed=0,direction=0)
+m = Meteor()
+
+
+meet = Meet(10)
+pyglet.clock.schedule_interval(meet.tick, 1 / 30)
+pyglet.clock.schedule_interval(meet.add_meteor, 1/2)
 pyglet.clock.schedule_interval(a.tick, 1 / 30)
 
 @window.event
@@ -85,21 +121,29 @@ def on_draw():
     window.clear()
     batch.draw()
 
+
 @window.event
 def on_key_press(sym, mod):
+    a.klavesy.add(sym)
     if sym == UP:
         a.direction = 0
-        a.rotation = 0
-    elif sym == DOWN:
-        a.direction = 180
-        a.rotation = 180
-    elif sym == LEFT:
-        a.direction = 270
-        a.rotation = 270
-    elif sym == RIGHT:
-        a.direction = 90
-        a.rotation = 90
+        a.speed = 120
     
+    if sym == DOWN:
+        a.direction = 180
+        a.speed = 120
+    
+    if sym == LEFT:
+        a.direction = 270
+        a.speed = 120
+    
+    if sym == RIGHT:
+        a.direction = 90
+        a.speed = 120
+                    
 
+
+def on_key_release(sym, mod):
+    a.klavesy.remove(sym)
 
 pyglet.app.run()
