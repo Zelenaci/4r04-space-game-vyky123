@@ -5,7 +5,7 @@
 # Licence: GNU/GPL
 ############################################################################
 import pyglet
-from pyglet.window.key import MOD_CTRL, DOWN, UP, LEFT, RIGHT
+from pyglet.window.key import DOWN, UP, LEFT, RIGHT
 import random
 from math import sin, cos, radians, pi
 import glob
@@ -62,22 +62,36 @@ class SpaceObject(object):
         self.sprite.x = self.x
         self.y += dt * self.speed * sin(pi / 2 - radians(self.direction))
         self.sprite.y = self.y
-
         
-        print(a.klavesy)
+        for sym in a.klavesy:
+             if UP in a.klavesy:
+                 if LEFT in a.klavesy:
+                     a.direction = 315
+                     a.speed = 150
+                 elif RIGHT in a.klavesy:
+                     a.direction = 45
+                     a.speed = 150
+                 else:
+                     a.direction = 0
+                     a.speed = 150
+             elif DOWN in a.klavesy:
+                 if LEFT in a.klavesy:
+                     a.direction = 225
+                     a.speed = 150
+                 elif RIGHT in a.klavesy:
+                     a.direction = 115
+                     a.speed = 150
+                 else:
+                     a.direction = 180
+                     a.speed = 180
+             elif LEFT in a.klavesy:
+                 a.direction = 270
+                 a.speed = 180
+             elif RIGHT in a.klavesy:
+                 a.direction = 90
+                 a.speed = 180
         
-    """
-    def tick(self, dt):
-        self.bounce()
-
-        # do promenne dt se uloží doba od posledního tiknutí
-        self.x += dt * self.speed * cos(pi / 2 - radians(self.direction))
-        self.sprite.x = self.x
-        self.y += dt * self.speed * sin(pi / 2 - radians(self.direction))
-        self.sprite.y = self.y
-        self.sprite.rotation += 0.01 * self.rspeed
-    """
-
+        
 class Meteor(SpaceObject):
     def __init__(self, x=None, y=None, direction=None,
                  speed=None, rspeed=None):
@@ -102,9 +116,15 @@ class Meet():
     def tick(self, dt):
         for meteor in self.meteors:
             meteor.tick(dt)
-            if meteor.x < -50 or meteor.y < -50 or meteor.x > window.width+50:
+            if meteor.x < -45 or meteor.y < -45 or meteor.x > window.width+45:
                 meteor.sprite.delete()
                 self.meteors.remove(meteor)
+                
+        
+        pos = a.x, a.y
+        metpos = m.x, m.y
+        if pos in metpos:
+            print("jou")
 
 
 a = SpaceObject('SpaceShooterRedux/PNG/playerShip1_red.png', x=500,y=100,speed=0,direction=0)
@@ -125,25 +145,10 @@ def on_draw():
 @window.event
 def on_key_press(sym, mod):
     a.klavesy.add(sym)
-    if sym == UP:
-        a.direction = 0
-        a.speed = 120
-    
-    if sym == DOWN:
-        a.direction = 180
-        a.speed = 120
-    
-    if sym == LEFT:
-        a.direction = 270
-        a.speed = 120
-    
-    if sym == RIGHT:
-        a.direction = 90
-        a.speed = 120
-                    
 
-
+@window.event
 def on_key_release(sym, mod):
     a.klavesy.remove(sym)
+    a.speed = 0
 
 pyglet.app.run()
