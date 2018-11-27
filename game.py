@@ -39,7 +39,8 @@ class SpaceObject(object):
             if speed is not None else randint(130, 180)
                 
         self.klavesy = set()
-
+        self.count = 0
+        
     @property
     def x(self):
         return self._x
@@ -61,37 +62,39 @@ class SpaceObject(object):
         self.sprite.x = self.x
         self.y += dt * self.speed * sin(pi / 2 - radians(self.direction))
         self.sprite.y = self.y
-        
         for sym in a.klavesy:
-            if 32 in a.klavesy:
-                meet.add_laser()
+            if a.count <= 0:
+                if 32 in a.klavesy:
+                    meet.add_laser()
+                    print(a.count)
+                    a.count = 0
                 
             if UP in a.klavesy:
                 if LEFT in a.klavesy:
                     a.direction = 315
-                    a.speed = 180
+                    a.speed = 220
                 elif RIGHT in a.klavesy:
                     a.direction = 45
-                    a.speed = 180
+                    a.speed = 220
                 else:
                     a.direction = 0
-                    a.speed = 180
+                    a.speed = 220
             elif DOWN in a.klavesy:
                 if LEFT in a.klavesy:
                     a.direction = 225
-                    a.speed = 180
+                    a.speed = 220
                 elif RIGHT in a.klavesy:
                     a.direction = 115
-                    a.speed = 180
+                    a.speed = 220
                 else:
                     a.direction = 180
-                    a.speed = 180
+                    a.speed = 220
             elif LEFT in a.klavesy:
                 a.direction = 270
-                a.speed = 180
+                a.speed = 220
             elif RIGHT in a.klavesy:
                 a.direction = 90
-                a.speed = 180
+                a.speed = 220
             
         
         if a.x < 50:
@@ -118,7 +121,7 @@ class Meteor(SpaceObject):
         self.direction = direction if direction is not None else randint(120, 240)
 
 class Laser(SpaceObject):
-    def __init__(self, img_file='img/laser.png', speed=800):
+    def __init__(self, img_file='img/laserBlue03.png', speed=800):
         # načtu obrázek
         self.image = pyglet.image.load(img_file)
         # střed otáčení dám na střed obrázku
@@ -132,6 +135,11 @@ class Laser(SpaceObject):
 
         self.x = a.x
         self.y = a.y + 100
+        
+        
+    def tick(self, dt):
+        a.count -= 500
+        self.y += dt * self.speed
 
         
 class Meet():
@@ -156,7 +164,12 @@ class Meet():
                 meteor.sprite.delete()
                 self.meteors.remove(meteor)
                 
-        
+        for laser in self.lasers:
+            laser.tick(dt)
+            if laser.y > window.height+50:
+                laser.sprite.delete()
+                self.lasers.remove(laser)
+            
         
         pos = a.x, a.y
         metpos = m.x, m.y
