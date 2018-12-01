@@ -39,7 +39,7 @@ class SpaceObject(object):
             if speed is not None else randint(130, 180)
                 
         self.klavesy = set()
-        self.count = 0
+        self.rof = 0.5
         
     @property
     def x(self):
@@ -62,15 +62,15 @@ class SpaceObject(object):
         self.sprite.x = self.x
         self.y += dt * self.speed * sin(pi / 2 - radians(self.direction))
         self.sprite.y = self.y
+        self.rof -= dt
         for sym in a.klavesy:
-            if a.count <= 0:
-                if 32 in a.klavesy:
+            if 32 in a .klavesy:
+                if self.rof <= 0:
                     meet.add_laser()
-                    print(a.count)
-                    a.count = 0
-                
+                    self.rof = 0.3
+                                  
             if UP in a.klavesy:
-                if LEFT in a.klavesy:
+                if LEFT in a.klavesy:   
                     a.direction = 315
                     a.speed = 220
                 elif RIGHT in a.klavesy:
@@ -105,8 +105,7 @@ class SpaceObject(object):
             a.y += 1 
         elif a.y > window.height-40:
             a.y -= 1
-        
-        #print(pyglet.clock.get_fps())
+
         
         
 class Meteor(SpaceObject):
@@ -134,11 +133,9 @@ class Laser(SpaceObject):
         self.speed = speed
 
         self.x = a.x
-        self.y = a.y + 100
-        
+        self.y = a.y + 80
         
     def tick(self, dt):
-        a.count -= 500
         self.y += dt * self.speed
 
         
@@ -176,8 +173,6 @@ class Meet():
 
 
 
-
-
 a = SpaceObject('SpaceShooterRedux/PNG/playerShip1_red.png', x=500,y=100,speed=0,direction=0)
 m = Meteor()
 
@@ -194,7 +189,6 @@ def on_draw():
 
 @window.event
 def on_key_press(sym, mod):
-    print(sym)
     a.klavesy.add(sym)
 
 @window.event
