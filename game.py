@@ -7,7 +7,7 @@
 import pyglet
 from pyglet.window.key import DOWN, UP, LEFT, RIGHT
 from random import randint, choice
-from math import sin, cos, radians, pi
+from math import sin, cos, radians, pi, sqrt
 import glob
 
 window = pyglet.window.Window(1000, 800)
@@ -121,6 +121,8 @@ class Meteor(SpaceObject):
         self.speed = speed if speed is not None else randint(50, 200)
         self.rspeed = rspeed if rspeed is not None else randint(- 40, 40)
         self.direction = direction if direction is not None else randint(120, 240)
+        
+    
 
 class Laser(SpaceObject):
     def __init__(self, img_file='img/laserBlue03.png', speed=800):
@@ -154,12 +156,16 @@ class Meet():
         
     def add_laser(self, dt=None):
         self.lasers.append(Laser())
+    
+    def col(self):
+        self.remove.sprite.delete()
+        self.meteors.remove(self.remove)
         
-        
-           
+            
     def tick(self, dt):
         for meteor in self.meteors:
             meteor.tick(dt)
+            
             if meteor.x < -50 or meteor.y < -50 or meteor.x > window.width+50:
                 meteor.sprite.delete()
                 self.meteors.remove(meteor)
@@ -169,16 +175,16 @@ class Meet():
             if laser.y > window.height+50:
                 laser.sprite.delete()
                 self.lasers.remove(laser)
-            
-        if meteor.x - a.x == 0:
-            print("yay")
-        pos = a.x, a.y
-        metpos = m.x, m.y
-
+        #print(self.meteors[].y - a.y)
+        for m in self.meteors:
+            if m.x - a.x < -10 and m.y - a.y < -10:
+                self.remove = m
+                self.col()
+                print(m.x)
+    
 
 
 a = SpaceObject('SpaceShooterRedux/PNG/playerShip1_red.png', x=500,y=100,speed=0,direction=0)
-m = Meteor()
 
 
 meet = Meet(10)
