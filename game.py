@@ -12,6 +12,9 @@ import glob
 
 window = pyglet.window.Window(1000, 800)
 batch = pyglet.graphics.Batch()   # pro optimalizované vyreslování objektů
+bgbatch = pyglet.graphics.Batch()
+background = pyglet.image.load('img/background.png')
+pyglet.sprite.Sprite(img=background, batch=bgbatch, x=0, y=0)
 
 class SpaceObject(object):
     def __init__(self, img_file,
@@ -33,7 +36,7 @@ class SpaceObject(object):
         self.y = self._y
         
         self.direction = direction \
-            if direction is not None else randint(0, 359)
+            if direction is not None else randint(0, 359) 
         # rychlost pohybu
         self.speed = speed \
             if speed is not None else randint(130, 180)
@@ -167,7 +170,8 @@ class Meet():
                 laser.sprite.delete()
                 self.lasers.remove(laser)
             
-        
+        if meteor.x - a.x == 0:
+            print("yay")
         pos = a.x, a.y
         metpos = m.x, m.y
 
@@ -186,6 +190,7 @@ pyglet.clock.schedule_interval(a.tick, 1 / 30)
 def on_draw():
     window.clear()
     batch.draw()
+    bgbatch.draw()
 
 @window.event
 def on_key_press(sym, mod):
