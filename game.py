@@ -235,7 +235,6 @@ def on_draw():
 
 @window.event
 def on_key_press(sym, mod):
-    print(sym)
     if sym != 65508:
         a.klavesy.add(sym)
     
