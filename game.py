@@ -7,14 +7,18 @@
 import pyglet
 from pyglet.window.key import DOWN, UP, LEFT, RIGHT
 from random import randint, choice
-from math import sin, cos, radians, pi, sqrt
+from math import sin, cos, radians, pi
 import glob
+from time import sleep
 
 window = pyglet.window.Window(1000, 800)
 batch = pyglet.graphics.Batch()   # pro optimalizované vyreslování objektů
 bgbatch = pyglet.graphics.Batch()
 background = pyglet.image.load('img/background.png')
-pyglet.sprite.Sprite(img=background, batch=bgbatch, x=0, y=0)
+bgsprite = pyglet.sprite.Sprite(img=background, batch=bgbatch, x=0, y=0)
+global lifecount
+lifecount = pyglet.text.Label(text="", font_name='Arial', font_size=30,x=window.width-30, y=window.height-30, anchor_x='center', anchor_y='center')
+
 
 class SpaceObject(object):
     def __init__(self, img_file,
@@ -42,6 +46,8 @@ class SpaceObject(object):
             if speed is not None else randint(130, 180)
                 
         self.klavesy = set()
+        self.lives = 3
+        self.lifecount = pyglet.text.Label()
         self.rof = 0.5
         
     @property
@@ -66,13 +72,17 @@ class SpaceObject(object):
         self.y += dt * self.speed * sin(pi / 2 - radians(self.direction))
         self.sprite.y = self.y
         self.rof -= dt
+        
+        global lifecount
+        lifecount = pyglet.text.Label(text=str(a.lives), font_name='Arial', font_size=30,x=window.width-30, y=window.height-30, anchor_x='center', anchor_y='center')
+       
         for sym in a.klavesy:
             if 32 in a .klavesy:
                 if self.rof <= 0:
                     meet.add_laser()
-                    self.rof = 0.3
+                    self.rof = 3
                                   
-            if UP in a.klavesy:
+            if UP in a.klavesy: 
                 if LEFT in a.klavesy:   
                     a.direction = 315
                     a.speed = 220
@@ -109,6 +119,7 @@ class SpaceObject(object):
         elif a.y > window.height-40:
             a.y -= 1
 
+      
         
         
 class Meteor(SpaceObject):
@@ -121,7 +132,7 @@ class Meteor(SpaceObject):
         self.speed = speed if speed is not None else randint(50, 200)
         self.rspeed = rspeed if rspeed is not None else randint(- 40, 40)
         self.direction = direction if direction is not None else randint(120, 240)
-        
+        self.size = min(self.image.width, self.image.height)/2
     
 
 class Laser(SpaceObject):
@@ -138,7 +149,7 @@ class Laser(SpaceObject):
         self.speed = speed
 
         self.x = a.x
-        self.y = a.y + 80
+        self.y = a.y + 75
         
     def tick(self, dt):
         self.y += dt * self.speed
@@ -175,36 +186,68 @@ class Meet():
             if laser.y > window.height+50:
                 laser.sprite.delete()
                 self.lasers.remove(laser)
-        #print(self.meteors[].y - a.y)
-        for m in self.meteors:
-            if m.x - a.x < -10 and m.y - a.y < -10:
-                self.remove = m
-                self.col()
-                print(m.x)
-    
+            else:
+                for m in self.meteors:
+                    if m.x - laser.x < 3+m.size and m.x - laser.x  > -3-m.size and m.y - laser.y < 3+m.size and  m.y - laser.y  > -3-m.size:
+                        try:
+                            laser.sprite.delete()
+                            self.lasers.remove(laser)
+                        except:
+                            continue
+                        self.remove = m
+                        self.col()
 
+        
+        
+        for m in self.meteors:
+            if m.x - a.x < 40+m.size and m.x - a.x  > -40-m.size and m.y - a.y < 33+m.size and  m.y - a.y  > -33-m.size:
+                self.remove = m      
+                self.col()
+                
+                a.lives -= 1
+                if a.lives < 1:
+                    konec()
+                    
+
+                    
+                             
+    
+def konec():
+    sleep(2)   
+    window.close()
+      
 
 a = SpaceObject('SpaceShooterRedux/PNG/playerShip1_red.png', x=500,y=100,speed=0,direction=0)
 
 
 meet = Meet(10)
 pyglet.clock.schedule_interval(meet.tick, 1 / 30)
-pyglet.clock.schedule_interval(meet.add_meteor, 1/2)
+pyglet.clock.schedule_interval(meet.add_meteor, 1/5)
 pyglet.clock.schedule_interval(a.tick, 1 / 30)
 
 @window.event
 def on_draw():
     window.clear()
-    batch.draw()
     bgbatch.draw()
+    batch.draw()
+    lifecount.draw()
+   
 
 @window.event
 def on_key_press(sym, mod):
-    a.klavesy.add(sym)
+    print(sym)
+    if sym != 65508:
+        a.klavesy.add(sym)
+    
+    else:
+        if a.rof <= 0:
+            meet.add_laser()
+            a.rof = 0.2
 
 @window.event
 def on_key_release(sym, mod):
-    a.klavesy.remove(sym)
-    a.speed = 0
+     if sym != 65508:
+        a.klavesy.remove(sym)
+        a.speed = 0
 
 pyglet.app.run()
