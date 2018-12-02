@@ -118,9 +118,7 @@ class SpaceObject(object):
             a.y += 1 
         elif a.y > window.height-40:
             a.y -= 1
-
-      
-        
+ 
         
 class Meteor(SpaceObject):
     def __init__(self, x=None, y=None, direction=None,
